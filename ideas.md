@@ -1,0 +1,7 @@
+- **Speed Improvement:** Parallelize to achieve test set processing in <2 hours (currently 3 images/sec without parallelization hence taking 12 hours).
+- **Prompt Improvement**
+- **Model Change:** Best rn is Qwen-VL-7b. Consider LLaVA. Phi3, Phi3.5, Minicpm, Qwen-VL-2b used but deemed inadequate.
+- **Tool Performance:** Tool calling time should be <0.5 seconds else don't do.
+- **No Quantization**: If quantized then speed is higher but accuracy lower so think carefully.
+- **MUST Requirement:** Need a model with effective spatial recognition performance.
+- **New Approach:** Crop images using SAM/CLIP's spatial and contextual awareness, then use Vision Language Models (VLM) for processing.
