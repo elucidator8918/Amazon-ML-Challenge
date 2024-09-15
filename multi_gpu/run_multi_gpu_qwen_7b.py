@@ -83,7 +83,7 @@ def save_to_csv(results, gpu_rank):
         df.to_csv(output_filename)
 
 def main():
-    test = pd.read_csv(os.path.join(DATASET_FOLDER, 'test.csv')).head(2000)
+    test = pd.read_csv(os.path.join(DATASET_FOLDER, 'test.csv'))
     
     # Prepare data in batches
     batch_size = 512  # Adjust based on your GPU memory
