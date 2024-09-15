@@ -75,8 +75,7 @@ Remember:
 def save_to_csv(results, gpu_rank):
     df = pd.DataFrame(results, columns=['index', 'prediction'])
     df = df.set_index('index').sort_index() 
-    df['index'] = df.index + 1
-    output_filename = os.path.join(DATASET_FOLDER, f'test_out_qwen_7b_gpu_{gpu_rank}.csv')
+    output_filename = os.path.join(DATASET_FOLDER, f'{directory}_out_qwen_7b_gpu_{gpu_rank}.csv')
     
     if os.path.exists(output_filename):
         df.to_csv(output_filename, mode='a', header=False)
@@ -99,11 +98,11 @@ def main():
     distributed_state.print(f"Inference completed and results saved for GPU {distributed_state.process_index}.")
 
     if distributed_state.is_main_process:
-        csv_files = glob.glob(os.path.join(DATASET_FOLDER, 'test_out_qwen_7b_gpu_*.csv'))
+        csv_files = glob.glob(os.path.join(DATASET_FOLDER, f'{directory}_out_qwen_7b_gpu_*.csv'))
         dfs = [pd.read_csv(f) for f in csv_files]
         merged_df = pd.concat(dfs, ignore_index=True)
         merged_df = merged_df.sort_values('index')
-        output_filename = os.path.join(DATASET_FOLDER, 'test_out_qwen_7b_merged.csv')
+        output_filename = os.path.join(DATASET_FOLDER, f'{directory}_out_qwen_7b_merged.csv')
         merged_df.to_csv(output_filename, index=False)
         print(f"Merged and sorted CSV saved as {output_filename}")
 
