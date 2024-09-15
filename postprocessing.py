@@ -5,6 +5,9 @@ from entity_mapping import unit_variations
 
 def extract_first_value(text):
     # Build a single regex pattern that includes all unit variations
+    if text is None or pd.isna(text) or text == "":
+        return ""
+    
     unit_pattern_parts = []
     unit_standardization = {}
     for standard_unit, variations in unit_variations.items():
@@ -46,13 +49,12 @@ def extract_first_value(text):
 
 
 
-data = pd.read_csv("test_out_qwen.csv")
+data = pd.read_csv("train_f1.csv")
 
-data.dropna(subset=['prediction'], inplace=True)
 
 data['extracted_value'] = data['prediction'].apply(extract_first_value)
 
-data.to_csv("test_out_qwen_postprocessed.csv", index=False)
+data.to_csv("train_f1_processed.csv", index=False)
 
 
 
