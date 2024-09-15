@@ -14,6 +14,7 @@ tqdm.pandas()
 
 model_id = "Qwen/Qwen2-VL-7B-Instruct"
 DATASET_FOLDER = 'dataset'
+directory = 'test'
 
 # Start up the distributed environment without needing the Accelerator
 distributed_state = PartialState()
@@ -51,7 +52,7 @@ Remember:
                 "role": "user",
                 "content": [            
                     {"type": "text", "text": prompt},
-                    {"type": "image", "image": f"test/{image_path.split('/')[-1]}", "resized_height": 768, "resized_width": 1280}
+                    {"type": "image", "image": f"{directory}/{image_path.split('/')[-1]}", "resized_height": 768, "resized_width": 1280}
                 ],
             }
         ]
@@ -83,7 +84,7 @@ def save_to_csv(results, gpu_rank):
         df.to_csv(output_filename)
 
 def main():
-    test = pd.read_csv(os.path.join(DATASET_FOLDER, 'test.csv'))
+    test = pd.read_csv(os.path.join(DATASET_FOLDER, f'{directory}.csv'))
     
     # Prepare data in batches
     batch_size = 512  # Adjust based on your GPU memory
