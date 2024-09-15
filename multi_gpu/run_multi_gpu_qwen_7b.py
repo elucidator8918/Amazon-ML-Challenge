@@ -1,4 +1,5 @@
 import os
+import glob
 import pandas as pd
 import torch
 import warnings
@@ -7,7 +8,6 @@ from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
 from qwen_vl_utils import process_vision_info
 from constants import entity_unit_map
 from accelerate import PartialState
-from accelerate.utils import gather_object
 
 warnings.filterwarnings("ignore")
 tqdm.pandas()
@@ -71,34 +71,40 @@ Remember:
     
     return results
 
+def save_to_csv(results, gpu_rank):
+    df = pd.DataFrame(results, columns=['index', 'prediction'])
+    df = df.set_index('index').sort_index() 
+    df['index'] = df.index + 1
+    output_filename = os.path.join(DATASET_FOLDER, f'test_out_qwen_7b_gpu_{gpu_rank}.csv')
+    
+    if os.path.exists(output_filename):
+        df.to_csv(output_filename, mode='a', header=False)
+    else:
+        df.to_csv(output_filename)
+
 def main():
-    test = pd.read_csv(os.path.join(DATASET_FOLDER, 'test.csv'))
+    test = pd.read_csv(os.path.join(DATASET_FOLDER, 'test.csv')).head(2000)
     
     # Prepare data in batches
-    batch_size = 31  # Adjust based on your GPU memory
+    batch_size = 512  # Adjust based on your GPU memory
     data = list(zip(test['image_link'], test['entity_name'], test.index))
-    batches = [data[i:i + batch_size + 1] for i in range(0, len(data), batch_size)]
+    batches = [data[i:i + batch_size] for i in range(0, len(data), batch_size)]
 
-    completions_per_process = []
-
-    with distributed_state.split_between_processes(batches, apply_padding=False) as split_batches:
+    with distributed_state.split_between_processes(batches) as split_batches:
         for batch in tqdm(split_batches, disable=not distributed_state.is_local_main_process):
             batch_results = parse_receipt(batch, model, processor)
-            completions_per_process.extend(batch_results)
-
-    # Gather results from all processes
-    completions_gather = gather_object(completions_per_process)
+            save_to_csv(batch_results, distributed_state.process_index)
+    
+    distributed_state.print(f"Inference completed and results saved for GPU {distributed_state.process_index}.")
 
     if distributed_state.is_main_process:
-        result_df = pd.DataFrame(completions, columns=['index', 'prediction'])        
-        result_df = result_df.set_index('index').sort_index()
-        result_df['index']+=1
-        
-        # Save the results
-        output_filename = os.path.join(DATASET_FOLDER, 'test_out_qwen_7b_distributed.csv')
-        result_df.to_csv(output_filename)
-
-    distributed_state.print("Inference completed and results saved.")
+        csv_files = glob.glob(os.path.join(DATASET_FOLDER, 'test_out_qwen_7b_gpu_*.csv'))
+        dfs = [pd.read_csv(f) for f in csv_files]
+        merged_df = pd.concat(dfs, ignore_index=True)
+        merged_df = merged_df.sort_values('index')
+        output_filename = os.path.join(DATASET_FOLDER, 'test_out_qwen_7b_merged.csv')
+        merged_df.to_csv(output_filename, index=False)
+        print(f"Merged and sorted CSV saved as {output_filename}")
 
 if __name__ == '__main__':
     main()
