@@ -33,26 +33,60 @@ def parse_receipt(batch, model, processor):
     results = []
     for image_path, entity_name, index in batch:
         entity_units = entity_unit_map[entity_name]
+#         prompt = f"""You are an AI assistant specialized in analyzing images. Your task is to extract specific information from the given image.
+# Please follow these instructions:
+# 1. Look for the entity named "{entity_name}" on the image.
+# 2. If found, extract the value associated with this entity.
+# 3. One of these units may follow the value: {entity_units}.
+# 4. Return only the numerical value and associated unit, if applicable.
+# 5. If the entity is not found respond with "Not found".
+# Examples:
+# - If asked for "item_weight" and you find "Net Wt: 500g", return "500 gram"
+# - If asked for "item_volume" and you find "1 Cup a day", return "1 cup"
+# Remember:
+# - Be precise and return only the requested information.
+# - Do not include any additional text or explanations in your response.
+# """
+#         prompt = f"""You are an AI assistant specialized in analyzing images. Your task is to extract specific information from the given image.
+
+# Please follow these instructions:
+# 1. Locate the entity named "{entity_name}" in the image.
+# 2. If the entity is found, extract the value associated with it.
+# 3. The value may be followed by one of these units: {entity_units}.
+# 4. Return only the numerical value and the associated unit, if applicable.
+# 5. If the entity is not found, respond with "Not found".
+
+# Examples:
+# - For "item_weight" with "Net Wt: 500g", return "500 gram"
+# - For "item_volume" with "1 Cup a day", return "1 cup"
+
+# Guidelines:
+# - Be precise and only return the requested information.
+# - Avoid including any additional text or explanations in your response."""
         prompt = f"""You are an AI assistant specialized in analyzing images. Your task is to extract specific information from the given image.
 Please follow these instructions:
-1. Look for the entity named "{entity_name}" on the image.
-2. If found, extract the value associated with this entity.
-3. One of these units may follow the value: {entity_units}.
-4. Return only the numerical value and associated unit, if applicable.
-5. If the entity is not found respond with "Not found".
+1. Locate the entity named "{entity_name}" in the image.
+2. If the entity is found, extract the value associated with it.
+3. The value may be followed by one of these units: {entity_units}.
+4. Return only the numerical value and the associated unit, if applicable.
+5. If the entity is not found, respond with "Not found".
+6. For entities such as height, width and depth, pay attention to the spatial location of the line segment and the numbers with respect to the entity.
 Examples:
-- If asked for "item_weight" and you find "Net Wt: 500g", return "500 gram"
-- If asked for "item_volume" and you find "1 Cup a day", return "1 cup"
-Remember:
-- Be precise and return only the requested information.
-- Do not include any additional text or explanations in your response.
+- For "item_weight" with "Net Wt: 500g", return "500 gram"
+- For "item_volume" with "1 Cup a day", return "1 cup"
+- For "height" with "Height: 10cm", return "10 centimetre"
+- For "width" with "Width: 5in", return "5 inch"
+- For "depth" with "Depth: 42cm", return "42 centimetre"
+Guidelines:
+- Be precise and only return the requested information.
+- Avoid including any additional text or explanations in your response.
 """
         messages = [
             {
                 "role": "user",
                 "content": [            
                     {"type": "text", "text": prompt},
-                    {"type": "image", "image": f"{directory}/{image_path.split('/')[-1]}", "resized_height": 768, "resized_width": 1280}
+                    {"type": "image", "image": f"{directory}/{image_path.split('/')[-1]}", "resized_height": 784, "resized_width": 1280}
                 ],
             }
         ]
@@ -73,10 +107,9 @@ Remember:
     return results
 
 def save_to_csv(results, gpu_rank):
-    df = pd.DataFrame(results, columns=['index', 'prediction'])
-    df = df.set_index('index').sort_index() 
+    df = pd.DataFrame(results, columns=['index', 'prediction'])    
+    df = df.set_index('index').sort_index()
     output_filename = os.path.join(DATASET_FOLDER, f'{directory}_out_qwen_7b_gpu_{gpu_rank}.csv')
-    
     if os.path.exists(output_filename):
         df.to_csv(output_filename, mode='a', header=False)
     else:
