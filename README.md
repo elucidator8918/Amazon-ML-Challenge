@@ -1,8 +1,18 @@
-# ML Challenge Problem Statement
+<img width="1066" alt="image" src="https://github.com/user-attachments/assets/9c024724-d6db-41d5-b406-998ba0de1f23">
 
-## Feature Extraction from Images
+## Problem Statement
 
 In this hackathon, the goal is to create a machine learning model that extracts entity values from images. This capability is crucial in fields like healthcare, e-commerce, and content moderation, where precise product information is vital. As digital marketplaces expand, many products lack detailed textual descriptions, making it essential to obtain key details directly from images. These images provide important information such as weight, volume, voltage, wattage, dimensions, and many more, which are critical for digital stores.
+
+<img width="1509" alt="image" src="https://github.com/user-attachments/assets/29df14ef-5345-431c-85c7-5bdf4a889d32">
+<hr>
+<img width="1509" alt="image" src="https://github.com/user-attachments/assets/e78eaed1-c858-4c6d-9752-3ebb51ee2744">
+<hr>
+<img width="1509" alt="image" src="https://github.com/user-attachments/assets/ac008ebf-4566-49a3-b35b-eddccd65bd6b">
+<hr>
+<img width="1509" alt="image" src="https://github.com/user-attachments/assets/aadf4361-f601-4f0a-86ce-53908fe199ee">
+<hr>
+<img width="1509" alt="image" src="https://github.com/user-attachments/assets/e2b98763-213e-4f49-8cb8-b49fd9f85ad5">
 
 ### Data Description: 
 
